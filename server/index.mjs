@@ -6,7 +6,7 @@ import { resolve, extname, sep } from 'node:path';
 import { promisify } from 'node:util';
 import { gzip } from 'node:zlib';
 import { openStore, transaction } from './store.mjs';
-import { apps, questions, scenes, dayKey, dayNumber, dailyPuzzle } from './content.mjs';
+import { apps, questions, scenes, dayKey, dayNumber, dailyPuzzle, sceneIndex } from './content.mjs';
 import { HttpError, text, integer, validDay, decodeImage } from './validation.mjs';
 import { primaryApp } from './project.mjs';
 
@@ -120,7 +120,7 @@ export async function createApp(options = {}) {
         if (path==='/api/config' && method==='GET') return json(res,{apps:appId?apps.filter(a=>a[0]===appId):apps,day:today(),timezone,maxImageBytes:500000});
         if (path==='/api/captions' && method==='GET') {
           const day=validDay(url.searchParams.get('day') ?? today());
-          const scene=((dayNumber(day)%scenes.length)+scenes.length)%scenes.length;
+          const scene=sceneIndex(day);
           const rows=db.prepare(`SELECT ${postFields},EXISTS(SELECT 1 FROM votes v WHERE v.scope='caption' AND v.target=posts.id AND v.voter=?) AS voted FROM posts WHERE kind='caption' AND day=? AND status='approved' ORDER BY votes DESC,created LIMIT 100`).all(sid,day);
           const yesterday=dayKey(new Date(Date.parse(`${today()}T12:00:00Z`)-86400000),timezone);
           const winner=db.prepare(`SELECT ${postFields} FROM posts WHERE kind='caption' AND day=? AND status='approved' ORDER BY votes DESC,created LIMIT 1`).get(yesterday);

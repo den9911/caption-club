@@ -31,6 +31,11 @@ export const scenes = [
   { name: 'Всё под контролем. Почти.', object: 'plant', bg: '#edcfb1' },
   { name: 'Специалист на удалёнке', object: 'cat', bg: '#e6c6cc' },
   { name: 'Планы на продуктивный день', object: 'cup', bg: '#ddd2ae' },
+  {"name": "Робот на перерыве", "object": "robot", "bg": "#d3dde2"},
+  {"name": "Пингвин в отпуске", "object": "penguin", "bg": "#c5ddec"},
+  {"name": "Рыбка на совещании", "object": "fish", "bg": "#d6e7d5"},
+  {"name": "Чайник и большие планы", "object": "kettle", "bg": "#edd9c3"},
+  {"name": "Космическая прогулка", "object": "space", "bg": "#d9cee8"},
 ];
 
 export const seedMemes = [
@@ -46,6 +51,8 @@ export function dayKey(date = new Date(), timezone = 'Europe/Moscow') {
   return new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
 }
 export function dayNumber(day) { return Math.floor(Date.parse(`${day}T00:00:00Z`) / 86400000); }
+// Keep all existing archive dates mapped to their original five illustrations.
+export function sceneIndex(day) {const count=day<'2026-11-01'?5:scenes.length;return ((dayNumber(day)%count)+count)%count;}
 export function dailyPuzzle(day) {
   const n = dayNumber(day);
   const pairs = [['кот', 'кит'], ['сон', 'сом'], ['мир', 'миг'], ['лук', 'люк'], ['чай', 'май'], ['дом', 'дым'], ['лес', 'лис']];

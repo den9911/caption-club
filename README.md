@@ -58,7 +58,7 @@ npm run check
 
 Set `PUBLIC_ORIGIN` to the exact HTTPS origin, give the process a persistent `DATA_DIR`, and put an HTTPS reverse proxy in front. Example Dockerfile, Caddy config, environment file, and systemd unit are included. Each independent project needs its own port and data directory. `.env` is not loaded automatically: use exported variables or `node --env-file=.env server/index.mjs`. See [OPERATIONS.md](OPERATIONS.md) for backups, moderation, identity limitations, and storage details.
 
-Daily scenes rotate through five original vectors. Visitors can submit three captions per browser per day, vote, see yesterday’s winner, export cards, and share permalinks. Expand the scene pool in `server/content.mjs`.
+Daily scenes rotate through ten original vectors from 1 November 2026; older archive dates retain their original scenes. Visitors can submit three captions per browser per day, vote, see yesterday’s winner, export cards, and share permalinks. Expand the scene pool in `server/content.mjs`.
 
 ## Develop with TypeScript
 
