@@ -9,6 +9,7 @@ import { openStore, transaction } from './store.mjs';
 import { apps, questions, scenes, dayKey, dayNumber, dailyPuzzle, sceneIndex } from './content.mjs';
 import { HttpError, text, integer, validDay, decodeImage } from './validation.mjs';
 import { primaryApp } from './project.mjs';
+import { createCaptions } from './captions.mjs';
 
 const zip = promisify(gzip);
 const publicRoot = fileURLToPath(new URL('../public/', import.meta.url));
@@ -37,6 +38,7 @@ export async function createApp(options = {}) {
   const uploadBudget = Number(options.uploadBudget ?? process.env.UPLOAD_BUDGET_BYTES ?? 0);
   if (!Number.isSafeInteger(uploadBudget) || uploadBudget < 0) throw new Error('Invalid UPLOAD_BUDGET_BYTES');
   const today = () => dayKey(new Date(),timezone);
+  const captions = createCaptions({ db, timezone });
   const limits = new Map();
   const cache = new Map();
   const sign = value => createHmac('sha256',secret).update(value).digest('hex');
@@ -118,27 +120,12 @@ export async function createApp(options = {}) {
         const input=req.method === 'POST' ? await body(req) : null;
         const method=req.method;
         if (path==='/api/config' && method==='GET') return json(res,{apps:appId?apps.filter(a=>a[0]===appId):apps,day:today(),timezone,maxImageBytes:500000});
-        if (path==='/api/captions' && method==='GET') {
-          const day=validDay(url.searchParams.get('day') ?? today());
-          const scene=sceneIndex(day);
-          const rows=db.prepare(`SELECT ${postFields},EXISTS(SELECT 1 FROM votes v WHERE v.scope='caption' AND v.target=posts.id AND v.voter=?) AS voted FROM posts WHERE kind='caption' AND day=? AND status='approved' ORDER BY votes DESC,created LIMIT 100`).all(sid,day);
-          const yesterday=dayKey(new Date(Date.parse(`${today()}T12:00:00Z`)-86400000),timezone);
-          const winner=db.prepare(`SELECT ${postFields} FROM posts WHERE kind='caption' AND day=? AND status='approved' ORDER BY votes DESC,created LIMIT 1`).get(yesterday);
-          return json(res,{day,scene,entries:rows,winner:winner ?? null});
-        }
+        if (path==='/api/captions' && method==='GET') return json(res,captions.list(url.searchParams.get('day'),sid));
         if (path==='/api/captions' && method==='POST') {
           throttle(req,'publish',8);
-          const title=text(input.title,160);
-          const count=db.prepare("SELECT COUNT(*) AS n FROM posts WHERE kind='caption' AND owner=? AND day=?").get(sid,today()).n;
-          if (count>=3) throw new HttpError(429,'На сегодня достаточно трёх подписей.');
-          const id=randomUUID();
-          db.prepare("INSERT INTO posts(id,kind,title,day,owner,status,created) VALUES(?,'caption',?,?,?,'approved',?)").run(id,title,today(),sid,Date.now());
-          return json(res,{id,day:today()},201);
+          return json(res,captions.publish(input.title,sid),201);
         }
-        if (path==='/api/captions/vote' && method==='POST') {
-          transaction(db,()=>{ approvedPost(input.id,'caption'); once('caption',input.id,sid); db.prepare('UPDATE posts SET votes=votes+1 WHERE id=?').run(input.id); });
-          return json(res,{ok:true});
-        }
+        if (path==='/api/captions/vote' && method==='POST') return json(res,captions.vote(input.id,sid));
         if (path==='/api/majority' && method==='GET') {
           return json(res,{questions:questions.map(([question,a,b],id)=>({id,question,options:[a,b],counts:[0,1].map(i=>db.prepare("SELECT COUNT(*) AS n FROM votes WHERE scope='majority' AND target=? AND choice=?").get(String(id),String(i)).n),choice:db.prepare("SELECT choice FROM votes WHERE scope='majority' AND target=? AND voter=?").get(String(id),sid)?.choice ?? null}))});
         }
