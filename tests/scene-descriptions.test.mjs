@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {sceneNames,sceneDescriptions,sceneSvg} from '../public/shared/scenes.js';
+test('each own editorial scene has a non-title description used by the SVG',()=>{assert.equal(sceneNames.length,sceneDescriptions.length);for(let i=0;i<sceneNames.length;i++){assert(sceneDescriptions[i].length>20);assert.notEqual(sceneDescriptions[i],sceneNames[i]);assert(sceneSvg(i).includes(`aria-label="${sceneDescriptions[i]}"`));}});

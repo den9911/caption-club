@@ -1,5 +1,6 @@
 // Original vector scenes, rendered locally; no external images or fonts.
 export const sceneNames=['Совещание по коробочным вопросам','Понедельник вышел из чата','Всё под контролем. Почти.','Специалист на удалёнке','Планы на продуктивный день',"Робот на перерыве","Пингвин в отпуске","Рыбка на совещании","Чайник и большие планы","Космическая прогулка"];
+export const sceneDescriptions=["Кот сидит в картонной коробке с раскрытыми клапанами.", "Круглое лицо с усталым выражением на фоне небольших звёздочек.", "Зелёное растение в глиняном горшке с нарисованным лицом.", "Кот выглядывает из-за открытого ноутбука.", "Пар поднимается над чашкой с нарисованным улыбающимся лицом.", "Улыбающийся робот с прямоугольной головой и антенной.", "Пингвин с белым животом в оранжевой шляпе.", "Оранжевая рыбка и пузырёк в прямоугольном аквариуме.", "Улыбающийся чайник с крышкой, ручкой и носиком.", "Космонавт в шлеме с голубым стеклом среди двух звёздочек."];
 const cat=`<path d="M210 220 L205 120 L250 155 Q300 130 350 155 L395 120 L390 220 Q400 310 300 315 Q200 310 210 220Z" fill="#f1a668" stroke="#2b302b" stroke-width="5"/><path d="M258 210h12m60 0h12" stroke="#2b302b" stroke-width="8" stroke-linecap="round"/><path d="M290 240l10 8 10-8m-10 8v15m0 0q-18 15-27 0m27 0q18 15 27 0" fill="none" stroke="#2b302b" stroke-width="4"/>`;
 export function sceneSvg(index=0) {
   const background=['#cbded1','#c4cfea','#edcfb1','#e6c6cc','#ddd2ae',"#d3dde2","#c5ddec","#d6e7d5","#edd9c3","#d9cee8"][index];
@@ -15,10 +16,11 @@ export function sceneSvg(index=0) {
     `<path d="M205 180h190l-18 140q-8 45-75 45t-77-45Z" fill="#e7a879" stroke="#2b302b" stroke-width="7"/><path d="M205 200q-80-20-75 30 4 28 80 35m185-65q65-45 70-5 5 30-80 55M245 180q0-50 55-50t55 50" fill="none" stroke="#2b302b" stroke-width="7"/><circle cx="260" cy="245" r="7"/><circle cx="340" cy="245" r="7"/><path d="M275 280q25 20 50 0" fill="none" stroke="#2b302b" stroke-width="6"/>`,
     `<circle cx="300" cy="180" r="70" fill="#f6f5ec" stroke="#2b302b" stroke-width="7"/><circle cx="300" cy="180" r="48" fill="#a9ced7" stroke="#2b302b" stroke-width="5"/><path d="M245 250q55-30 110 0l20 100H225Z" fill="#f6f5ec" stroke="#2b302b" stroke-width="7"/><path d="M245 270l-65 45m175-45 65 45m-140 35-20 35m60-35 20 35" stroke="#2b302b" stroke-width="9" stroke-linecap="round"/><path d="M130 115h32m-16-16v32m325 20h32m-16-16v32" stroke="#e0a363" stroke-width="7"/>`,
   ][index];
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 430" role="img" aria-label="${sceneNames[index]}"><rect width="600" height="430" fill="${background}"/><ellipse cx="300" cy="385" rx="190" ry="18" fill="#2b302b" opacity=".09"/>${objects}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 430" role="img" aria-label="${sceneDescriptions[index]??sceneNames[index]}"><rect width="600" height="430" fill="${background}"/><ellipse cx="300" cy="385" rx="190" ry="18" fill="#2b302b" opacity=".09"/>${objects}</svg>`;
 }
 export async function drawScene(ctx,index,x,y,w,h) {
   const blob=new Blob([sceneSvg(index)],{type:'image/svg+xml'}),url=URL.createObjectURL(blob);
   try {const img=new Image();img.src=url;await img.decode();ctx.drawImage(img,x,y,w,h);}
   finally{URL.revokeObjectURL(url);}
 }
+
