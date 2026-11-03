@@ -13,7 +13,7 @@ export function createCaptions({ db, timezone, now = () => new Date(), makeId = 
       const currentDay = today();
       day = validDay(day ?? currentDay);
       const entries = db.prepare(`SELECT ${fields},EXISTS(SELECT 1 FROM votes v WHERE v.scope='caption' AND v.target=posts.id AND v.voter=?) AS voted FROM posts WHERE kind='caption' AND day=? AND status='approved' ORDER BY votes DESC,created LIMIT 100`).all(voter, day);
-      const yesterday = dayKey(new Date(Date.parse(`${currentDay}T12:00:00Z`) - 86400000), timezone);
+      const yesterday = new Date(Date.parse(`${currentDay}T00:00:00Z`) - 86400000).toISOString().slice(0, 10);
       const winner = db.prepare(`SELECT ${fields} FROM posts WHERE kind='caption' AND day=? AND status='approved' ORDER BY votes DESC,created LIMIT 1`).get(yesterday);
       return { day, scene: sceneIndex(day), entries, winner: winner ?? null };
     },
@@ -39,3 +39,4 @@ export function createCaptions({ db, timezone, now = () => new Date(), makeId = 
     }
   };
 }
+

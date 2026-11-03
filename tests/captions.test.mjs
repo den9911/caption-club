@@ -23,3 +23,18 @@ test('caption rules keep daily limits and votes consistent', () => {
     assert.equal(captions.publish('New day', 'author').day, '2026-11-02');
   } finally { db.close(); }
 });
+
+
+test('yesterday is the previous calendar date even in UTC+14 and across year/leap boundaries',()=>{
+ for(const [zone,instant,today,previous] of [
+  ['Pacific/Kiritimati','2026-11-01T20:00:00Z','2026-11-02','2026-11-01'],
+  ['Europe/Moscow','2026-12-31T22:00:00Z','2027-01-01','2026-12-31'],
+  ['America/Los_Angeles','2024-03-01T12:00:00Z','2024-03-01','2024-02-29'],
+  ['UTC','2026-11-02T12:00:00Z','2026-11-02','2026-11-01']]){
+  const db=openStore(':memory:');
+  try{for(const day of [today,previous])db.prepare("INSERT INTO posts(id,kind,title,day,owner,status,created) VALUES(?,'caption',?,?,'author','approved',1)").run(day,day,day);
+   const feature=createCaptions({db,timezone:zone,now:()=>new Date(instant)});
+   const result=feature.list(null,'reader');assert.equal(result.day,today);assert.equal(result.winner.title,previous);
+  }finally{db.close();}
+ }
+});
